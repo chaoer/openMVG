@@ -16,14 +16,11 @@ file(GLOB REMOVEFILESUNITTEST *_test.cpp)
 #Remove the future main files
 list(REMOVE_ITEM matching_files_cpp ${REMOVEFILESUNITTEST})
 
-set(THREADS_PREFER_PTHREAD_FLAG ON)
-find_package(Threads REQUIRED)
-
 set_source_files_properties(${matching_files_cpp} PROPERTIES LANGUAGE CXX)
 add_library(openMVG_matching
   ${matching_files_header}
   ${matching_files_cpp})
-target_link_libraries(openMVG_matching openMVG_features stlplus Threads::Threads)
+target_link_libraries(openMVG_matching openMVG_features stlplus)
 set_target_properties(openMVG_matching PROPERTIES SOVERSION ${OPENMVG_VERSION_MAJOR} VERSION "${OPENMVG_VERSION_MAJOR}.${OPENMVG_VERSION_MINOR}")
 set_property(TARGET openMVG_matching PROPERTY FOLDER OpenMVG/OpenMVG)
 install(TARGETS openMVG_matching DESTINATION lib EXPORT openMVG-targets)

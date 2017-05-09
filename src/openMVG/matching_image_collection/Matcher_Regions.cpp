@@ -20,8 +20,11 @@ using namespace openMVG::matching;
 using namespace openMVG::features;
 
 Matcher_Regions::Matcher_Regions(
-  float distRatio, EMatcherType eMatcherType)
-  :Matcher(), f_dist_ratio_(distRatio), eMatcherType_(eMatcherType)
+  float distRatio,
+  EMatcherType eMatcherType)
+  :Matcher(),
+  f_dist_ratio_(distRatio),
+  eMatcherType_(eMatcherType)
 {
 }
 
@@ -30,13 +33,16 @@ void Matcher_Regions::Match(
   const std::shared_ptr<sfm::Regions_Provider> & regions_provider,
   const Pair_Set & pairs,
   PairWiseMatchesContainer & map_PutativesMatches,
-  C_Progress * my_progress_bar)const
+  C_Progress * my_progress_bar) const
 {
   if (!my_progress_bar)
     my_progress_bar = &C_Progress::dummy();
 #ifdef OPENMVG_USE_OPENMP
-  std::cout << "Using the OPENMP thread interface" << std::endl;
   const bool b_multithreaded_pair_search = (eMatcherType_ == CASCADE_HASHING_L2);
+  if (b_multithreaded_pair_search)
+  {
+    std::cout << "Using the OPENMP thread interface" << std::endl;
+  }
   // -> set to true for CASCADE_HASHING_L2, since OpenMP instructions are not used in this matcher
 #endif
 
@@ -45,19 +51,18 @@ void Matcher_Regions::Match(
   // Sort pairs according the first index to minimize the MatcherT build operations
   using Map_vectorT = std::map<IndexT, std::vector<IndexT>>;
   Map_vectorT map_Pairs;
-  for (Pair_Set::const_iterator iter = pairs.begin(); iter != pairs.end(); ++iter)
+  for (const auto & pair_iter : pairs)
   {
-    map_Pairs[iter->first].push_back(iter->second);
+    map_Pairs[pair_iter.first].push_back(pair_iter.second);
   }
 
   // Perform matching between all the pairs
-  for (Map_vectorT::const_iterator iter = map_Pairs.begin();
-    iter != map_Pairs.end(); ++iter)
+  for (const auto & map_iter : map_Pairs)
   {
     if (my_progress_bar->hasBeenCanceled())
       continue;
-    const IndexT I = iter->first;
-    const auto & indexToCompare = iter->second;
+    const IndexT I = map_iter.first;
+    const auto & indexToCompare = map_iter.second;
 
     std::shared_ptr<features::Regions> regionsI = regions_provider->get(I);
     if (regionsI->RegionCount() == 0)
